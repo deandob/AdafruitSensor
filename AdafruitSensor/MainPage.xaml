@@ -1,0 +1,46 @@
+﻿<Page
+    x:Class="AdafruitSensor.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AdafruitSensor"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="Layout_Grid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Margin="9,0,-9,0">
+        <TextBlock x:Name="Accel_X" Margin="325,100,0,0" TextWrapping="Wrap" Text="X:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Accel_Y" Margin="326,134,0,0" TextWrapping="Wrap" Text="Y:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Accel_Z" Margin="327,165,0,0" TextWrapping="Wrap" Text="Z:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Accel_XC" Margin="525,100,0,0" TextWrapping="Wrap" Text="X:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Accel_YC" Margin="526,134,0,0" TextWrapping="Wrap" Text="Y:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Accel_ZC" Margin="527,165,0,0" TextWrapping="Wrap" Text="Z:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Gyro_X" Margin="329,262,0,0" TextWrapping="Wrap" Text="X:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Gyro_Y" Margin="329,293,0,0" TextWrapping="Wrap" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30" RenderTransformOrigin="-5.733,3.467">
+        	<Run Text="Y:"/>
+        </TextBlock>
+        <TextBlock x:Name="Gyro_Z" Margin="328,322,0,0" TextWrapping="Wrap" Text="Z:" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="30" Height="30"/>
+        <TextBlock x:Name="Press" Margin="319,404,0,0" TextWrapping="Wrap" FontSize="20" FontWeight="Bold" Foreground="#FFF30C0C" Width="192" HorizontalAlignment="Left" Height="33" VerticalAlignment="Top">
+        	<Run Text="Pressure (hPa)"/>
+        </TextBlock>
+        <TextBlock x:Name="Temp" Margin="319,442,0,0" TextWrapping="Wrap" FontSize="20" FontWeight="Bold" Foreground="#FFF30C0C" Width="192" HorizontalAlignment="Left" Text="Temperature (C) " Height="33" VerticalAlignment="Top"/>
+        <TextBlock x:Name="Altit" Margin="319,480,0,567" TextWrapping="Wrap" FontSize="20" FontWeight="Bold" Foreground="#FFF30C0C" Text="Altitude (m) " Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="AccelXaxis" Margin="361,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="192" Height="30"/>
+        <TextBlock x:Name="AccelYaxis" Margin="361,135,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" HorizontalAlignment="Left" Width="192"/>
+        <TextBlock x:Name="AccelZaxis" Margin="361,165,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="AccelXaxisC" Margin="561,100,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" HorizontalAlignment="Left" Width="192" Height="30"/>
+        <TextBlock x:Name="AccelYaxisC" Margin="561,135,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" HorizontalAlignment="Left" Width="192"/>
+        <TextBlock x:Name="AccelZaxisC" Margin="561,165,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="GyroXaxis" Margin="363,262,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="GyroYaxis" Margin="363,290,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" FontSize="20" Height="30" Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="GyroZaxis" Margin="363,322,0,0" TextWrapping="Wrap" Text="" FontSize="20" Height="30" VerticalAlignment="Top" Width="192" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="Temperature" Margin="511,445,0,0" TextWrapping="Wrap" Text="" FontSize="20" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="192"/>
+        <TextBlock x:Name="Altitude" Margin="511,483,0,567" TextWrapping="Wrap" Text="" FontSize="20" HorizontalAlignment="Left" Width="192"/>
+        <Button Content="Start" HorizontalAlignment="Left" Margin="325,367,0,0" VerticalAlignment="Top" Click="Button_Click_1"/>
+        <TextBox HorizontalAlignment="Left" Margin="328,43,0,0" TextWrapping="Wrap" FontSize="20" Text="Accelerometer (m/s2)" VerticalAlignment="Top" BorderThickness="0" Foreground="#FFFB1010"/>
+        <TextBox x:Name="gyrtxt" HorizontalAlignment="Left" Margin="356,217,0,0" TextWrapping="Wrap" Text="Gyro (Rad/s)" FontSize="20" VerticalAlignment="Top" IsReadOnly="True" BorderThickness="0" Foreground="#FFE81A1A"/>
+        <TextBox x:Name="Pressure" HorizontalAlignment="Left" Height="33" Margin="500,404,0,0" TextWrapping="Wrap" FontSize="20" VerticalAlignment="Top" Width="188" BorderThickness="0" IsReadOnly="True"/>
+        <TextBox x:Name="Status" HorizontalAlignment="Left" Margin="361,68,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="283"/>
+        <Button Content="Shutdown" HorizontalAlignment="Left" Height="32" Margin="411,367,0,0" VerticalAlignment="Top" Width="89" Click="Button_Click"/>
+
+    </Grid>
+</Page>
