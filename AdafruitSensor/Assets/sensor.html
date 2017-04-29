@@ -105,7 +105,7 @@
         statStr = "<b>Status:<b/> ";
         scale = 1;
         var oldVal = 0;
-        var newVal;
+        var currAngle;
         var offset = 0;
         var arrow = document.getElementById("arrow");
         var degTxt = document.getElementById("degTxt");
@@ -153,14 +153,15 @@
 
         ws.onmessage = function (evt) {
             //alert(evt.data)
-            var data = evt.data.split(":")
-            newVal = data[2]
+            var data = evt.data.split(":");
+            currAngle = data[2];
+            var newVal = data[2] - offset;
             if (newVal * scale > 65) newVal = 65 / scale;
             if (newVal * scale < -65) newVal = -65 / scale;
             //TODO: Add space for numbers < 10
-            degTxt.innerText = Math.abs(data[2]) + "°";
+            degTxt.innerText = (Math.round(Math.abs(currAngle - offset) * 10) / 10) + "°";
             //arrow.style.setProperty('transition', 'transform ' + (Math.abs(newVal - oldVal) / scale) + 's cubic-bezier(0.680, -0.550, 0.265, 1.550)');
-            arrow.style.setProperty('transform', 'rotate(' + (newVal - offset) * -scale + 'deg)');
+            arrow.style.setProperty('transform', 'rotate(' + (newVal * -scale) + 'deg)');
             oldVal = newVal;
             //document.getElementById("xAccBar").style["left"] = 135 + data[0] * scale + "px"
             //document.getElementById("xAccTxt").innerText = "xAcc (" + data[0] + ")"
@@ -173,11 +174,11 @@
         }
 
         function calibrate() {
-            if (typeof newVal !== "undefined") {
+            if (typeof currAngle !== "undefined") {
                 alert("Ensure hook is not swinging and press OK to calibrate");
-                setTimeout(function () { offset = newVal; }, 300)
+                setTimeout(function () { offset = currAngle; }, 400)
             } else {
-                alert("Cannot calibrate without connection to hook");
+                alert("Cannot calibrate without first connecting to hook sensor");
             }
         }
 
