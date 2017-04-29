@@ -83,6 +83,9 @@
         &nbsp;&nbsp;&nbsp;
         <button id="shutdown" onclick="shutdown()">Shutdown</button>
     </div>
+    <video style="visibility: hidden" width="2" height="2" loop>
+        <source src="2x2.mp4" type="video/mp4">
+    </video>
     <!--
     <div style="position: absolute; top:135px; left: 5px; width:50px; height:4px;border:2px solid #ff0000; background:#ff0000"></div>
     <div style="position: absolute; top:135px; left: 56px; width:50px; height:4px;border:2px solid #ffd800; background:#ffd800"></div>
@@ -94,13 +97,16 @@
     <div id="xAccBar" style="position: absolute; top:115px; left: 135px; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 20px solid black"></div>
     -->
     <script>
+        //Browser connect to http://192.168.137.1/sensor.html
 
         wifi = "192.168.1.137:80/sockets/";
         wired = "192.168.0.116:80/sockets/";
         initAlt = 0;
         statStr = "<b>Status:<b/> ";
         scale = 1;
-        var oldVal = 0
+        var oldVal = 0;
+        var newVal;
+        var offset = 0;
         var arrow = document.getElementById("arrow");
         var degTxt = document.getElementById("degTxt");
         arrow.style.setProperty("transform-origin", "200px " + "200px");
@@ -148,13 +154,13 @@
         ws.onmessage = function (evt) {
             //alert(evt.data)
             var data = evt.data.split(":")
-            var newVal = data[2]
+            newVal = data[2]
             if (newVal * scale > 65) newVal = 65 / scale;
             if (newVal * scale < -65) newVal = -65 / scale;
             //TODO: Add space for numbers < 10
             degTxt.innerText = Math.abs(data[2]) + "°";
             //arrow.style.setProperty('transition', 'transform ' + (Math.abs(newVal - oldVal) / scale) + 's cubic-bezier(0.680, -0.550, 0.265, 1.550)');
-            arrow.style.setProperty('transform', 'rotate(' + newVal * -scale + 'deg)');
+            arrow.style.setProperty('transform', 'rotate(' + (newVal - offset) * -scale + 'deg)');
             oldVal = newVal;
             //document.getElementById("xAccBar").style["left"] = 135 + data[0] * scale + "px"
             //document.getElementById("xAccTxt").innerText = "xAcc (" + data[0] + ")"
@@ -167,7 +173,12 @@
         }
 
         function calibrate() {
-            alert("to do...")
+            if (typeof newVal !== "undefined") {
+                alert("Ensure hook is not swinging and press OK to calibrate");
+                setTimeout(function () { offset = newVal; }, 300)
+            } else {
+                alert("Cannot calibrate without connection to hook");
+            }
         }
 
         function shutdown() {

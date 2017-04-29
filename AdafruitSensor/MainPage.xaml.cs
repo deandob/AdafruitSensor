@@ -55,9 +55,8 @@ using Windows.System;
 //BUG: Due to power supply pull at power up, the wifi won't work sometimes, so put BOOT_DELAY=2 in CONFIG.TXT in the EFIESP directory to spread out the power draw on startup. Else reboot after a poweron
 //TODO: Remote restart from web browser
 //TODO: Autostart web server / sensors
-//TODO: Put on github
-//TODO: Remote shutdown
-//TODO: Remote calibrate
+//TODO: Move to local github directory
+//TODO: Stop screen blanking
 //TODO: Measure altitude
 //TODO: Use moving averages not sample averages (use 8 samples then becomes easy to compute by right shifting divide)
 //TODO: COnvert strings sent to browser to JSON
