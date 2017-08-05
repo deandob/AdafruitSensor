@@ -1,0 +1,191 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <meta content='width=device-width, initial-scale=0.9, maximum-scale=0.9, user-scalable=0' name='viewport' />
+    <title></title>
+    <style>
+        button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+        }
+
+        div {
+            font-family: Arial;
+            font-size: 20px;
+        }
+
+        input[type=range],
+        ::-moz-range-track,
+        ::-ms-track {
+            -webkit-appearance: none;
+            background-color: 3f91e5;
+            width: 250px;
+            height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <svg height="100%" width="100%" style="position:absolute; top:0px; left:0px; z-index:-100">
+        <defs>
+            <marker id='head' orient='auto' markerWidth='3' markerHeight='5' refX='0.1' refY='2'>
+                <path d='M0,0 V4 L2,2 Z' fill='black' />
+            </marker>
+            <path id="txtwrap" d="M-5,300 a215,180 0 0,0 415,-5" />
+        </defs>
+        <g transform="rotate(-90, 200, 300)">
+            <path d="M215,119 A200,200 0 0,0 145,174" fill="none" stroke="red" stroke-width="10" />
+            <path d="M145,174 A200,200 0 0,0 105,255" fill="none" stroke="orange" stroke-width="10" />
+            <path d="M105,255 A200,200 0 0,0 105,345" fill="none" stroke="green" stroke-width="10" />
+            <path d="M105,343 A200,200 0 0,0 145,426" fill="none" stroke="orange" stroke-width="10" />
+            <path d="M145,426 A200,200 0 0,0 215,481" fill="none" stroke="red" stroke-width="10" />
+        </g>
+        <text>
+            <textPath id="scaleNums" xlink:href="#txtwrap" font-size="30" fill="grey" stroke="grey" font-family="arial" word-spacing="21">60 45 30 15 0 15 30 45 60</textPath>
+        </text>
+    </svg>
+    <svg id="arrow" height="400px" width="100%" style="position:absolute; top:0px; left:0px; z-index:100">
+        <path d="M200,250 L200,385" fill="black" stroke="black" stroke-width="5" marker-end='url(#head)' />
+    </svg>
+    <div>
+        <h2 style="text-align: center">Crane Load Reckoner</h2>
+    </div>
+    <div style="display: flex;justify-content: space-between;">
+        <div id="recv"><b>Status:</b> Connecting</div>
+        <div style="text-align: right">Prototype v1.3</div>
+    </div>
+    <br />
+    <div style="display: flex;justify-content: space-between;">
+        <div id="height"><b>Cable height: </b> 5.3m</div>
+        <div id="adjust" style="text-align: right"><b>Adjustment: </b>N/A</div>
+    </div>
+    <div id="degTxt" style="position:absolute; top:300px; left: 150px; font-size: 80px; font-family: 'Arial'; color: rgb(200,200,200); font-weight: bold">&nbsp;0°</div>
+    <br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+        <input id="slideScale" type="range" min="0.5" max="3" step="0.5" list="rangeList" value="1.0" onchange="sliderMoved(this.value)" style="display: block; margin-left: auto; margin-right: auto; width: 300px; z-index:200" />
+        <datalist id="rangeList">
+            <option>0.5</option>
+            <option>1.0</option>
+            <option>1.5</option>
+            <option>2.0</option>
+            <option>2.5</option>
+            <option>3.0</option>
+        </datalist>
+    <div id="scaleTxt" style="text-align: center">Zoom x1</div>
+    <br />
+    <div style="display: flex; justify-content: center">
+        <button id="calibrate" onclick="calibrate()"> Calibrate </button>
+        &nbsp;&nbsp;&nbsp;
+        <button id="shutdown" onclick="shutdown()">Shutdown</button>
+    </div>
+    <video style="visibility: hidden" width="2" height="2" loop>
+        <source src="2x2.mp4" type="video/mp4">
+    </video>
+    <!--
+    <div style="position: absolute; top:135px; left: 5px; width:50px; height:4px;border:2px solid #ff0000; background:#ff0000"></div>
+    <div style="position: absolute; top:135px; left: 56px; width:50px; height:4px;border:2px solid #ffd800; background:#ffd800"></div>
+    <div style="position: absolute; top:135px; left: 106px; width:100px; height:4px;border:2px solid green; background:green"></div>
+    <div style="position: absolute; top:135px; left: 206px; width:50px; height:4px;border:2px solid #ffd800; background:#ffd800"></div>
+    <div style="position: absolute; top:135px; left: 256px; width:50px; height:4px;border:2px solid #ff0000; background:#ff0000"></div>
+    <div id="xAccTxt" style="position: absolute; top:150px; left: 125px"><b>X Acc</b></div>
+
+    <div id="xAccBar" style="position: absolute; top:115px; left: 135px; width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent; border-top: 20px solid black"></div>
+    -->
+    <script>
+        //Browser connect to http://192.168.137.1/sensor.html
+
+        wifi = "192.168.1.137:80/sockets/";
+        wired = "192.168.0.116:80/sockets/";
+        initAlt = 0;
+        statStr = "<b>Status:<b/> ";
+        scale = 1;
+        var oldVal = 0;
+        var currAngle;
+        var offset = 0;
+        var arrow = document.getElementById("arrow");
+        var degTxt = document.getElementById("degTxt");
+        arrow.style.setProperty("transform-origin", "200px " + "200px");
+
+        ws = new WebSocket("ws://" + location.hostname + ":80/sockets/");
+
+        ws.onerror = function (evt) {
+            document.getElementById("recv").innerHTML = statStr + "Network Error was reported: " + evt.type;
+        }
+
+        ws.onopen = function () {
+            document.getElementById("recv").innerHTML = statStr + "Connected"
+            ws.send("Client Connected")
+        }
+
+        function sliderMoved(val) {
+            document.getElementById("scaleTxt").innerHTML = "Scale x" + val;
+            scale = val;
+            var scaleStr, spacing;
+            switch (+scale) {
+                case 0.5:
+                    scaleStr = "120 90 60 30 0 30 60 90 120"
+                    spacing = 20;
+                    break;
+                case 1:
+                    scaleStr = "60 45 30 15 0 15 30 45 60"
+                    spacing = 21;
+                    break;
+                case 1.5:
+                    break;
+                case 2:
+                    break;
+                case 2.5:
+                    break;
+                case 3:
+                    break;
+                default:
+                    break;
+            }
+            //TODO: Not working
+            document.getElementById("scaleNums").value = scaleStr;
+            document.getElementById("scaleNums").setAttribute('word-spacing', spacing) 
+        }
+
+        ws.onmessage = function (evt) {
+            //alert(evt.data)
+            var data = evt.data.split(":");
+            currAngle = data[2];
+            var newVal = data[2] - offset;
+            if (newVal * scale > 65) newVal = 65 / scale;
+            if (newVal * scale < -65) newVal = -65 / scale;
+            //TODO: Add space for numbers < 10
+            degTxt.innerText = (Math.round(Math.abs(currAngle - offset) * 10) / 10) + "°";
+            //arrow.style.setProperty('transition', 'transform ' + (Math.abs(newVal - oldVal) / scale) + 's cubic-bezier(0.680, -0.550, 0.265, 1.550)');
+            arrow.style.setProperty('transform', 'rotate(' + (newVal * -scale) + 'deg)');
+            oldVal = newVal;
+            //document.getElementById("xAccBar").style["left"] = 135 + data[0] * scale + "px"
+            //document.getElementById("xAccTxt").innerText = "xAcc (" + data[0] + ")"
+        }
+
+        ws.onclose = function () {
+            document.getElementById("recv").innerHTML = statStr + "Closed"
+            //alert("Connected to Server. Establishing session...")
+            //ws.send("Client disconnected") 
+        }
+
+        function calibrate() {
+            if (typeof currAngle !== "undefined") {
+                alert("Ensure hook is not swinging and press OK to calibrate");
+                setTimeout(function () { offset = currAngle; }, 400)
+            } else {
+                alert("Cannot calibrate without first connecting to hook sensor");
+            }
+        }
+
+        function shutdown() {
+            ws.send("shutdown");
+            alert("Shutting down, wait 8 seconds before removing power...")
+        }
+    </script>
+</body>
+</html>

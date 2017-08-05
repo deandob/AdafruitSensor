@@ -62,6 +62,12 @@ using Windows.System;
 //TODO: COnvert strings sent to browser to JSON
 //TODO: Stop application breaking if client websocket gets disconnected
 //TODO: Retry if the sensors can't be found "the opps text"
+//TODO: Better version of web server
+//TODO: Automatically work out if in landscape or portrait mode
+//TODO: Compensate for hook spinning
+
+// Accelerator angle calculation: http://www.nxp.com/docs/en/application-note/AN3461.pdf
+// Compensation for yaw (spining around y axis for hook spin) http://cache.freescale.com/files/sensors/doc/app_note/AN4248.pdf 
 
 namespace AdafruitSensor
 {
@@ -102,6 +108,7 @@ namespace AdafruitSensor
         private DispatcherTimer ReadSensorTimer;
         HttpServer server1 = new HttpServer(80);
 
+        public double Pi180 = 180 / Math.PI;
 
 
         public MainPage()
@@ -192,26 +199,34 @@ namespace AdafruitSensor
 
                 Stopwatch loopDelay = Stopwatch.StartNew();
                 Stopwatch sendDelay = Stopwatch.StartNew();
-                string calcXStr, calcZStr;                
+                string calcXStr, calcZStr, calcYStr;                
                 try
                 {
                     while (true)
                     {
                         accel.getEvent(ref Accelevent);
                         gyro.getEvent(ref Gyroevent);
-                        calcXStr = String.Format("{0:0.0}", XkalmanCalculate((float)(90 - Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.x) * (180 / Math.PI)), Gyroevent.gyro.x, (int)loopDelay.ElapsedMilliseconds));
-                        calcZStr = String.Format("{0:0.0}", ZkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * (180 / Math.PI)), Gyroevent.gyro.z, (int)loopDelay.ElapsedMilliseconds));
+
+                        //calcX = XkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.z) * Pi180), Gyroevent.gyro.x, elapsed);
+                        //calcY = YkalmanCalculate((float)(Math.Atan2(-Accelevent.acceleration.x, Math.Sqrt(Accelevent.acceleration.y * Accelevent.acceleration.y + Accelevent.acceleration.x * Accelevent.acceleration.z)) * Pi180), Gyroevent.gyro.y, elapsed);
+                        //calcZ = ZkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * Pi180), Gyroevent.gyro.z, elapsed);
+                        //COULD USE THE CALIBRATE FOR SQUARE ON THE LOAD THEN USE THE YAW (Z) TO MEASURE HOOK SPIN
+
+
+                        calcXStr = String.Format("{0:0.0}", XkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.z) * Pi180), Gyroevent.gyro.x, (int)loopDelay.ElapsedMilliseconds));
+                        calcYStr = String.Format("{0:0.0}", YkalmanCalculate((float)(-Math.Atan2(Accelevent.acceleration.x, Math.Sqrt(Accelevent.acceleration.y * Accelevent.acceleration.y + Accelevent.acceleration.z * Accelevent.acceleration.z)) * Pi180), Gyroevent.gyro.y, (int)loopDelay.ElapsedMilliseconds));
+                        //calcZStr = String.Format("{0:0.0}", ZkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * (180 / Math.PI)), Gyroevent.gyro.z, (int)loopDelay.ElapsedMilliseconds));
                         loopDelay.Restart();
                         if (sendDelay.ElapsedMilliseconds > 200)
                         {
                             sendDelay.Restart();
                             bmp.getEvent(ref Pressevent);
                             //bmp.getTemperature(ref temperature);
-                            float altitude = bmp.pressureToAltitude(Adafruit_BMP085_Unified.SENSORS_PRESSURE_SEALEVELHPA, Pressevent.pressure);
-                            mySocket.Send(calcXStr + ":" + 0 + ":" + calcZStr + ":" + String.Format("{0:0.0}", altitude));
+                            //float altitude = bmp.pressureToAltitude(Adafruit_BMP085_Unified.SENSORS_PRESSURE_SEALEVELHPA, Pressevent.pressure);
+                            mySocket.Send(calcXStr + ":" + calcYStr + ":" + 0);
                             Status.Text = loopDelay.ElapsedMilliseconds.ToString();
                             AccelXaxisC.Text = calcXStr;
-                            AccelZaxisC.Text = calcZStr;
+                            AccelYaxisC.Text = calcYStr;
                         }
                         await Task.Delay(10);
                     }
@@ -381,7 +396,9 @@ namespace AdafruitSensor
         public float calcZ = 0;
         Stopwatch tt = Stopwatch.StartNew();
 
+
         // Timer loop
+        //NOT USED **********************************************************
         private void Timer_Tick(object sender, object e)
         {
             var xx = Stopwatch.StartNew();
@@ -408,9 +425,12 @@ namespace AdafruitSensor
             //Debug.WriteLine("X: " + Gyroevent.gyro.x + "  " + "Y: " + Gyroevent.gyro.y + "  " + "Z: " + Gyroevent.gyro.z + "  rad/s");
             int elapsed = (int)tt.ElapsedMilliseconds;
             tt.Restart();
-            calcX = XkalmanCalculate((float)(90 - Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.x) * (180 / Math.PI)), Gyroevent.gyro.x, elapsed);
-            calcY = 0;
-            calcZ = ZkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * (180 / Math.PI)), Gyroevent.gyro.z, elapsed);
+            calcX = XkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.z) * Pi180), Gyroevent.gyro.x, elapsed);
+            calcY = YkalmanCalculate((float)(Math.Atan2(-Accelevent.acceleration.x, Math.Sqrt(Accelevent.acceleration.y * Accelevent.acceleration.y + Accelevent.acceleration.x * Accelevent.acceleration.z)) * Pi180), Gyroevent.gyro.y, elapsed);
+            //calcZ = ZkalmanCalculate((float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * Pi180), Gyroevent.gyro.z, elapsed);
+            //COULD USE THE CALIBRATE FOR SQUARE ON THE LOAD THEN USE THE YAW (Z) TO MEASURE HOOK SPIN
+
+            calcZ = 0;
             //calcX = 0.98F * (calcX + Gyroevent.gyro.z * timerMS * SCALE_GYR_ANGLE / 1000F) + 0.02F * (float)(90 - Math.Atan2(Accelevent.acceleration.y, Accelevent.acceleration.x) * (180 / Math.PI));
             //calcY = 0;
             //calcZ = 0.98F * (calcZ + Gyroevent.gyro.z * timerMS * SCALE_GYR_ANGLE / 1000F) + 0.02F * (float)(Math.Atan2(Accelevent.acceleration.z, Accelevent.acceleration.y) * (180 / Math.PI));
@@ -501,9 +521,9 @@ namespace AdafruitSensor
 
         // KasBot V1 - Kalman filter module
 
-        float Q_angle = 0.01F; //0.001   Q_angle and Q_gyro are inverse of standard deviation
-        float Q_gyro = 0.03F;  //0.003
-        float R_angle = 0.001F;  //0.03   R_angle is convergence factor, the smaller - the faster we converge from gyro towards accelerometer angle
+        float Q_angle = 0.001F; //0.001   Q_angle and Q_gyro are inverse of standard deviation
+        float Q_gyro = 0.003F;  //0.003
+        float R_angle = 0.03F;  //0.03   R_angle is convergence factor, the smaller - the faster we converge from gyro towards accelerometer angle
 
         float x_bias = 0;
         float y_bias = 0;
